@@ -1,10 +1,13 @@
 package work_with_files.dao.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import work_with_files.dao.interfaces.FileDAO;
 import work_with_files.model.FileInfo;
 
@@ -17,9 +20,12 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class FileDAOImpl implements FileDAO {
 
-    private static final String CREATE_FILE = "INSERT INTO files_info(file_name, file_size, file_key, upload_date) VALUES (?, ?, ?, ?)";
+    private static final String CREATE_FILE = "INSERT INTO netology.FILES_INFO (file_name, file_size, file_key, upload_date) VALUES (?, ?, ?, ?)";
 
     private final JdbcTemplate jdbcTemplate;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * 32 — создаём дату которую и сохраним.
@@ -29,22 +35,28 @@ public class FileDAOImpl implements FileDAO {
      * а создаёт новый объект, заполняя переданные поля и копируя остальные с изначального).
      */
     @Override
+    @Transactional
     public FileInfo create(final FileInfo file) {
         LocalDate uploadDate = LocalDate.now();
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(x -> {
-            PreparedStatement preparedStatement = x.prepareStatement(CREATE_FILE, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, file.getName());
-            preparedStatement.setLong(2, file.getSize());
-            preparedStatement.setString(3, file.getKey());
-            preparedStatement.setDate(4, Date.valueOf(uploadDate));
-            return preparedStatement;
-        }, keyHolder);
+        FileInfo newFile = FileInfo.builder().id(1L).name(file.getName()).size(file.getSize()).key(file.getKey()).uploadDate(LocalDate.now()).build();
+        entityManager.persist(newFile);
+        return newFile;
 
-        return file.toBuilder()
-                .id(keyHolder.getKey().longValue())
-                .uploadDate(uploadDate)
-                .build();
+//        jdbcTemplate.update(x -> {
+//            PreparedStatement preparedStatement = x.prepareStatement(CREATE_FILE, Statement.RETURN_GENERATED_KEYS);
+//            preparedStatement.setString(1, file.getName());
+//            preparedStatement.setLong(2, file.getSize());
+//            preparedStatement.setString(3, file.getKey());
+//            preparedStatement.setDate(4, Date.valueOf(uploadDate));
+//            return preparedStatement;
+//        }, keyHolder);
+
+////        return file.toBuilder()
+////                .id(keyHolder.getKey().longValue())
+////                .uploadDate(uploadDate)
+////                .build();
+//        return null;
     }
 
     private static final String FIND_FILE_BY_ID = "SELECT id, file_name, file_size, file_key, upload_date FROM files_info WHERE id = ?";

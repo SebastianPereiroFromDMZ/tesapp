@@ -25,7 +25,7 @@ public class FileController {
      */
     private final FileService fileService;
 
-    @PostMapping
+    @PostMapping("/post")
     public ResponseEntity<FileInfo> upload(@RequestParam MultipartFile attachment) {
         try {
             return new ResponseEntity<>(fileService.upload(attachment), HttpStatus.CREATED);

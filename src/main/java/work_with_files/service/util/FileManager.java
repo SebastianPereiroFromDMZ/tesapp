@@ -1,8 +1,10 @@
 package work_with_files.service.util;
 
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.stereotype.Component;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
+@Component
 public class FileManager {
 
     /**
@@ -18,7 +22,7 @@ public class FileManager {
      * 25 - 26 — создаем поток и пишем туда наши байты (и оборачиваем это все добро в try-finally чтобы быть уверенными, что поток точно закроется).
      */
     public void upload(byte[] resource, String keyName) throws IOException {
-        Path path = Paths.get(DIRECTORY_PATH, keyName);
+        Path path = Paths.get("resources", keyName);
         Path file = Files.createFile(path);
         FileOutputStream stream = null;
         try {
@@ -30,7 +34,7 @@ public class FileManager {
     }
 
     public Resource download(String key) throws IOException {
-        Path path = Paths.get(DIRECTORY_PATH + key);
+        Path path = Paths.get("resources" + key);
         Resource resource = new UrlResource(path.toUri());
         if (resource.exists() || resource.isReadable()) {
             return resource;
@@ -40,7 +44,7 @@ public class FileManager {
     }
 
     public void delete(String key) throws IOException {
-        Path path = Paths.get(DIRECTORY_PATH + key);
+        Path path = Paths.get("resources" + key);
         Files.delete(path);
     }
 }
