@@ -22,7 +22,7 @@ public class FileManager {
      * 25 - 26 — создаем поток и пишем туда наши байты (и оборачиваем это все добро в try-finally чтобы быть уверенными, что поток точно закроется).
      */
     public void upload(byte[] resource, String keyName) throws IOException {
-        Path path = Paths.get("resources", keyName);
+        Path path = Paths.get("C:\\Users\\u1\\Desktop\\CRUD_File_Spring\\src\\main\\resources", keyName);
         Path file = Files.createFile(path);
         FileOutputStream stream = null;
         try {
@@ -34,7 +34,7 @@ public class FileManager {
     }
 
     public Resource download(String key) throws IOException {
-        Path path = Paths.get("resources" + key);
+        Path path = Paths.get("C:\\Users\\u1\\Desktop\\CRUD_File_Spring\\src\\main\\resources" + key);
         Resource resource = new UrlResource(path.toUri());
         if (resource.exists() || resource.isReadable()) {
             return resource;

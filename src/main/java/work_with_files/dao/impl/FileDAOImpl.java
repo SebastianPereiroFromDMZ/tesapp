@@ -15,12 +15,14 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 @RequiredArgsConstructor
 public class FileDAOImpl implements FileDAO {
 
-    private static final String CREATE_FILE = "INSERT INTO netology.FILES_INFO (file_name, file_size, file_key, upload_date) VALUES (?, ?, ?, ?)";
+    private static final String CREATE_FILE = "INSERT INTO netology.files_info (file_name, file_size, file_key, upload_date) VALUES (?, ?, ?, ?)";
+    private AtomicInteger count = new AtomicInteger();
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -39,27 +41,30 @@ public class FileDAOImpl implements FileDAO {
     public FileInfo create(final FileInfo file) {
         LocalDate uploadDate = LocalDate.now();
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        FileInfo newFile = FileInfo.builder().id(1L).name(file.getName()).size(file.getSize()).key(file.getKey()).uploadDate(LocalDate.now()).build();
-        entityManager.persist(newFile);
-        return newFile;
+//        FileInfo newFile = FileInfo.builder().id(1L).name(file.getName()).size(file.getSize()).key(file.getKey()).uploadDate(LocalDate.now()).build();
+//        entityManager.persist(newFile);
+//        return newFile;
 
-//        jdbcTemplate.update(x -> {
-//            PreparedStatement preparedStatement = x.prepareStatement(CREATE_FILE, Statement.RETURN_GENERATED_KEYS);
-//            preparedStatement.setString(1, file.getName());
-//            preparedStatement.setLong(2, file.getSize());
-//            preparedStatement.setString(3, file.getKey());
-//            preparedStatement.setDate(4, Date.valueOf(uploadDate));
-//            return preparedStatement;
-//        }, keyHolder);
+        jdbcTemplate.update(x -> {
+            PreparedStatement preparedStatement = x.prepareStatement(CREATE_FILE, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, file.getName());
+            preparedStatement.setLong(2, file.getSize());
+            preparedStatement.setString(3, file.getKey());
+            preparedStatement.setDate(4, Date.valueOf(uploadDate));
+            return preparedStatement;
+        }, keyHolder);
 
-////        return file.toBuilder()
-////                .id(keyHolder.getKey().longValue())
-////                .uploadDate(uploadDate)
-////                .build();
+
+
+        //keyHolder.getKey().longValue();
+        return file.toBuilder()
+                .id((long) count.incrementAndGet())
+                .uploadDate(uploadDate)
+                .build();
 //        return null;
     }
 
-    private static final String FIND_FILE_BY_ID = "SELECT id, file_name, file_size, file_key, upload_date FROM files_info WHERE id = ?";
+    private static final String FIND_FILE_BY_ID = "SELECT id, file_name, file_size, file_key, upload_date FROM netology.files_info WHERE id = ?";
 
     @Override
     public FileInfo findById(Long fileId) {
